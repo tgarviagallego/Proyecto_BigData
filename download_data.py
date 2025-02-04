@@ -3,6 +3,8 @@ import os
 import io
 import boto3
 
+NUM_DATA = 4*365+1
+
 # AWS S3 Configuration
 BUCKET_NAME = "trading-view-data"
 AWS_REGION = "eu-south-2"
@@ -63,7 +65,7 @@ if __name__ == "__main__":
     for crypto in cryptos:
         crypto_name = crypto[:-3]
         
-        crypto_data = request.get_hist(symbol=crypto, exchange="CRYPTO", interval=Interval.daily, n_bars=4*365+1)
+        crypto_data = request.get_hist(symbol=crypto, exchange="CRYPTO", interval=Interval.daily, n_bars=NUM_DATA)
         crypto_data.drop(columns=["volume"], inplace=True)
         
         for year, year_data in crypto_data.groupby(crypto_data.index.year):
