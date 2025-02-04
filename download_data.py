@@ -1,5 +1,4 @@
 from TradingviewData import TradingViewData, Interval
-import os
 import io
 import boto3
 
