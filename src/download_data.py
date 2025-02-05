@@ -1,6 +1,7 @@
 from TradingviewData import TradingViewData, Interval
 import io
 import boto3
+from credenciales import *
 
 NUM_DATA = 4*365+1
 
@@ -10,9 +11,9 @@ AWS_REGION = "eu-south-2"
 
 s3 = boto3.client(
     "s3",
-    aws_access_key_id="ASIA5V6I6Y35W363WGK3",
-    aws_secret_access_key="DLTGC9vym9RfTuUIjVsiihhqDaDtm6KieJHFVO6/",
-    aws_session_token="IQoJb3JpZ2luX2VjEKn//////////wEaCmV1LXNvdXRoLTIiRzBFAiBVTOg5HmC7YZqA36/mEuObSN5EUcoOkff0GqzLhe2+JgIhALOZ6sReF41cjm3INQo4a7sb2QPLlqqnRuzT+7OjBB+2KukCCEsQABoMOTQwNDgyNDE0MzMxIgwj5fYK0ESnMIYskSUqxgI9MJoKs0cXsIFATEYyeD+SABfP7kQw5Aan6GGD5lBTv6sSHJcYOVrZVwt1hu5W62AgiBflJrOqVRO7BcIyczqXEnmlLjwL8UUm3vKjeTp/0972diT/a2ceV8mp+Vo7qG8M6m0TG0cLC5LSzyPBKweV/NAACdjO72FiSS6rquU0oAKapKJ91PXH7U56Y0F1i2lpSQo5B0q/JjDkp6F5jtj2e7PzVS6GWVYBOsp2EOkRs0KZHdRJMc/kclElOOrXRoArOVhfvjdMioUOo+5yZv4Lg0gS95/dgJhQGGGQKEreQxOxXjPpFXLcHLldKNCNjQ59+hU84Kxr7SvI0C9JBgzXpxJCf1ALeZdJQcTVSOenAUhwJLLQ+tyjT343ztfymWpNYb5JTgHWoUm8+DjmlvYMoxS4E+fQZv7SNHsno7HXejNyt/x++DCUzo69BjqnAcg7SAet/7vUHQefbhC+9SnsgcWcbThIBbP5dPKjhlLhbL0n6HRqAakYnr6G5S3yk4Feq69i6nP71Wy56fzN8Bfaes18gTD4byVb5W5HMBumLd4fceQIPFjA4DP13RyFPmpOCpcjaxTrXWabW9EpP3UMZv0YhPCjBRZKnParFjVUrYjhvnF2z5XITU5XPrIB/V+dfqBGtUk8AYB4pGcOS6SUvMBdKChQ",
+    aws_access_key_id=KEY_ID,
+    aws_secret_access_key=ACCESS_KEY,
+    aws_session_token=SESSION_TOKEN,
     region_name=AWS_REGION
 )
 
