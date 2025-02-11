@@ -51,13 +51,16 @@ if __name__ == "__main__":
 
         crawler_name = f"{crawler_name_prefix}{crypto}"
 
-        glue_client.create_crawler(
-            Name=crawler_name,
-            Role=iam_role,
-            DatabaseName=DATABASE_NAME,
-            Targets={'S3Targets': s3_targets},
-            TablePrefix=f"trade_data_{crypto}_",
-            Description=f"Crawler que detecta datos de {crypto} y los guarda en la BBDD"
-        )
+        try:
+            glue_client.create_crawler(
+                Name=crawler_name,
+                Role=iam_role,
+                DatabaseName=DATABASE_NAME,
+                Targets={'S3Targets': s3_targets},
+                TablePrefix=f"trade_data_{crypto}_",
+                Description=f"Crawler que detecta datos de {crypto} y los guarda en la BBDD"
+            )
+        except Exception:
+            pass
 
         glue_client.start_crawler(Name=crawler_name)
