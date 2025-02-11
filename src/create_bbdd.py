@@ -40,27 +40,24 @@ if __name__ == "__main__":
         "XLMUSD"
     ]
 
-    crawler_name_prefix = "crawler_trading_view_"
-    iam_role = "trading-view-IAM-role"
-
+    s3_targets = []
     for crypto in cryptos:
-        s3_targets = []
-
         for anio in range(2021, 2026):
             s3_targets.append({"Path": f"s3://{BUCKET_NAME}/{crypto}/{anio}"})
 
-        crawler_name = f"{crawler_name_prefix}{crypto}"
+    iam_role = "trading-view-IAM-role"
+    crawler_name = "crawler_trading_view_"
 
-        try:
-            glue_client.create_crawler(
-                Name=crawler_name,
-                Role=iam_role,
-                DatabaseName=DATABASE_NAME,
-                Targets={'S3Targets': s3_targets},
-                TablePrefix=f"trade_data_{crypto}_",
-                Description=f"Crawler que detecta datos de {crypto} y los guarda en la BBDD"
-            )
-        except Exception:
-            pass
+    try:
+        glue_client.create_crawler(
+            Name=crawler_name,
+            Role=iam_role,
+            DatabaseName=DATABASE_NAME,
+            Targets={'S3Targets': s3_targets},
+            TablePrefix=f"trade_data_{crypto}_",
+            Description=f"Crawler que detecta datos de {crypto} y los guarda en la BBDD"
+        )
+    except Exception as error:
+        print(error)
 
-        glue_client.start_crawler(Name=crawler_name)
+    glue_client.start_crawler(Name=crawler_name)
