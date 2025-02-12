@@ -30,7 +30,7 @@ if __name__ == "__main__":
     s3_targets = [{"Path": f"s3://{BUCKET_NAME}"}]
 
     iam_role = "arn:aws:iam::940482414331:role/traiding-view-isamaria"
-    crawler_name = "aws-isamaria"
+    crawler_name = "aws-isamaria2"
 
     try:
         glue_client.create_crawler(
