@@ -24,29 +24,13 @@ if __name__ == "__main__":
             }
         )
     except Exception as error:
-        print(error)
+        # print(error)  # Este error salta si la bbdd estaba ya creada
+        pass
 
-    # Creamos el crawler
-    cryptos = [
-        "BTCUSD", 
-        "ETHUSD", 
-        "XRPUSD", 
-        "SOLUSD", 
-        "DOGEUSD", 
-        "ADAUSD", 
-        "SHIBUSD", 
-        "DOTUSD", 
-        "AAVEUSD", 
-        "XLMUSD"
-    ]
+    s3_targets = [{"Path": f"s3://{BUCKET_NAME}"}]
 
-    s3_targets = []
-    for crypto in cryptos:
-        for anio in range(2021, 2026):
-            s3_targets.append({"Path": f"s3://{BUCKET_NAME}/{crypto}/{anio}"})
-
-    iam_role = "trading-view-IAM-role"
-    crawler_name = "crawler_trading_view_"
+    iam_role = "arn:aws:iam::940482414331:role/traiding-view-isamaria"
+    crawler_name = "aws-isamaria2"
 
     try:
         glue_client.create_crawler(
@@ -54,10 +38,11 @@ if __name__ == "__main__":
             Role=iam_role,
             DatabaseName=DATABASE_NAME,
             Targets={'S3Targets': s3_targets},
-            TablePrefix=f"trade_data_{crypto}_",
-            Description=f"Crawler que detecta datos de {crypto} y los guarda en la BBDD"
+            TablePrefix=f"trade_data_sprint2-isamaria",
+            Description=f"Crawler que detecta datos del bucket trading-view-data de s3 y los guarda en la BBDD"
         )
     except Exception as error:
-        print(error)
+        # print(error)  # Este error salta si el crawler estaba ya creado
+        pass
 
     glue_client.start_crawler(Name=crawler_name)
