@@ -24,7 +24,8 @@ if __name__ == "__main__":
             }
         )
     except Exception as error:
-        print(error)
+        #print(error)
+        pass
 
     # Creamos el crawler
     cryptos = [
@@ -42,8 +43,8 @@ if __name__ == "__main__":
 
     s3_targets = [{"Path": f"s3://{BUCKET_NAME}"}]
 
-    iam_role = "trading-view-IAM-role"
-    crawler_name = "crawler_trading_view"
+    iam_role = "arn:aws:iam::940482414331:role/traiding-view-isamaria"
+    crawler_name = "aws-isamaria"
 
     try:
         glue_client.create_crawler(
@@ -51,7 +52,7 @@ if __name__ == "__main__":
             Role=iam_role,
             DatabaseName=DATABASE_NAME,
             Targets={'S3Targets': s3_targets},
-            TablePrefix=f"trade_data_sprint2",
+            TablePrefix=f"trade_data_sprint2-isamaria",
             Description=f"Crawler que detecta datos del bucket trading-view-data de s3 y los guarda en la BBDD"
         )
     except Exception as error:
