@@ -24,22 +24,8 @@ if __name__ == "__main__":
             }
         )
     except Exception as error:
-        #print(error)
+        # print(error)  # Este error salta si la bbdd estaba ya creada
         pass
-
-    # Creamos el crawler
-    cryptos = [
-        "BTCUSD", 
-        "ETHUSD", 
-        "XRPUSD", 
-        "SOLUSD", 
-        "DOGEUSD", 
-        "ADAUSD", 
-        "SHIBUSD", 
-        "DOTUSD", 
-        "AAVEUSD", 
-        "XLMUSD"
-    ]
 
     s3_targets = [{"Path": f"s3://{BUCKET_NAME}"}]
 
@@ -56,6 +42,7 @@ if __name__ == "__main__":
             Description=f"Crawler que detecta datos del bucket trading-view-data de s3 y los guarda en la BBDD"
         )
     except Exception as error:
-        print(error)
+        # print(error)  # Este error salta si el crawler estaba ya creado
+        pass
 
     glue_client.start_crawler(Name=crawler_name)
