@@ -66,7 +66,11 @@ if __name__ == "__main__":
         
         crypto_data = request.get_hist(symbol=crypto, exchange="CRYPTO", interval=Interval.daily, n_bars=NUM_DATA)
         crypto_data.drop(columns=["volume"], inplace=True)
-        
+        crypto_data["open"] = crypto_data["open"].astype(float)
+        crypto_data["close"] = crypto_data["close"].astype(float)
+        crypto_data["high"] = crypto_data["high"].astype(float)
+        crypto_data["low"] = crypto_data["low"].astype(float)
+
         for year, year_data in crypto_data.groupby(crypto_data.index.year):
             for month, month_data in year_data.groupby(year_data.index.month):
                 file_name = f"{crypto_name}_{year}_{month}.csv"
