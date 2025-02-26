@@ -39,7 +39,7 @@ def upload_to_s3(data, bucket: str, key: str) -> None:
     Sube un archivo CSV a S3 desde memoria.
     """
     with io.StringIO() as csv_buffer:
-        data.to_csv(csv_buffer, index=True)
+        data.to_csv(csv_buffer, index=True, float_format='%.10f')
         s3.put_object(Bucket=bucket, Key=key, Body=csv_buffer.getvalue())
 
 
@@ -65,11 +65,11 @@ if __name__ == "__main__":
         crypto_name = crypto[:-3]
         
         crypto_data = request.get_hist(symbol=crypto, exchange="CRYPTO", interval=Interval.daily, n_bars=NUM_DATA)
-        crypto_data.drop(columns=["volume"], inplace=True)
-        crypto_data["open"] = crypto_data["open"].astype(float)
-        crypto_data["close"] = crypto_data["close"].astype(float)
-        crypto_data["high"] = crypto_data["high"].astype(float)
-        crypto_data["low"] = crypto_data["low"].astype(float)
+        #crypto_data.drop(columns=["volume"], inplace=True)
+        crypto_data["open"] = crypto_data["open"].astype("float")
+        crypto_data["close"] = crypto_data["close"].astype("float")
+        crypto_data["high"] = crypto_data["high"].astype("float")
+        crypto_data["low"] = crypto_data["low"].astype("float")
 
         for year, year_data in crypto_data.groupby(crypto_data.index.year):
             for month, month_data in year_data.groupby(year_data.index.month):
