@@ -1,7 +1,7 @@
 import time
 import boto3
 from botocore.config import Config
-import random, json
+import json
 import subprocess
 
 BOOTSTRAP_SERVERS = [
@@ -11,6 +11,17 @@ BOOTSTRAP_SERVERS = [
 BOOTSTRAP_STRING = ",".join(BOOTSTRAP_SERVERS)
 TOPIC = "imat3a_ETH"
 KEY = "A"
+
+KAFKA_CMD = [f"./kafka_2.13-3.6.0/bin/kafka-console-consumer.sh",
+"--bootstrap-server", BOOTSTRAP_STRING,
+"--consumer.config", "./kafka_2.13-3.6.0/config/client.properties",
+"--topic", TOPIC,
+"--property", "print.key=true",
+"--property", "print.value=true",
+"--property", "print.partition=true",
+"--property", "print.offset=true",
+"--property", "print.timestamp=true",
+"--consumer-property", "group.id=imat3a_group02"]
 
 class TimestreamWriter:
     def __init__(self):
@@ -23,63 +34,58 @@ class TimestreamWriter:
         self.client = boto3.client('timestream-write', 
                                  region_name='eu-west-1',  # Mantenemos esta region, hemos creado la base de datos de Timestream en eu-west-1 ya que no esta disponible en eu-south-2 (Spain)
                                  config=self.config)
+
+    def create_cli_consumer(self):
+        result = subprocess.Popen(KAFKA_CMD, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return result
         
-    def write_records(self):
-        print("Writing records")
-        current_time = self._current_milli_time()
-        price = self.consume_kafka()
-        dimensions = [
-                {'Name' :'ETH', 'Value':'Crypto'} # Cambiar 'BTC' por vuestra cryptomoneda en concreto
-        ]
+    def write_records(self, result):
+        price = self.consume_kafka(result)
+        print(price)
+        if price is not None:
+            print("Writing records")
+            current_time = self._current_milli_time()
 
-        stock_price = {
-            'MeasureName':'ETH', # Cambiar 'BTC' por vuestra cryptomoneda en concreto
-            'Dimensions': dimensions,
-            'MeasureValue': str(price),
-            'Time': current_time
-        }
+            dimensions = [
+                    {'Name' :'ETH', 'Value':'Crypto'} # Cambiar 'BTC' por vuestra cryptomoneda en concreto
+            ]
 
-        records = [stock_price]
-        # La base de datos de Amazon Timestream ha sido creada en eu-west-1 en la cuenta de Testing. Es posible ver esta base de datos y realizar consultas directamente desde AWS
-        try:
-            result = self.client.write_records(
-                DatabaseName='CryptoIcaiDatabase',  # Nombre de la base de datos Timestream (No modificar)
-                TableName='CryptoMonedas',        # Nombre de la tabla de Timestream (No modificar)
-                Records=records,
-                CommonAttributes={}
-            )
-            print("WriteRecords Status: [%s]" % result['ResponseMetadata']['HTTPStatusCode'])
-        except self.client.exceptions.RejectedRecordsException as err:
-            self._print_rejected_records_exceptions(err)
-        except Exception as err:
-            print("Error:", err)
+            stock_price = {
+                'MeasureName':'ETH', # Cambiar 'BTC' por vuestra cryptomoneda en concreto
+                'Dimensions': dimensions,
+                'MeasureValue': str(price),
+                'Time': current_time
+            }
+
+            records = [stock_price]
+            # La base de datos de Amazon Timestream ha sido creada en eu-west-1 en la cuenta de Testing. Es posible ver esta base de datos y realizar consultas directamente desde AWS
+            try:
+                result = self.client.write_records(
+                    DatabaseName='CryptoIcaiDatabase',  # Nombre de la base de datos Timestream (No modificar)
+                    TableName='CryptoMonedas',        # Nombre de la tabla de Timestream (No modificar)
+                    Records=records,
+                    CommonAttributes={}
+                )
+                print("WriteRecords Status: [%s]" % result['ResponseMetadata']['HTTPStatusCode'])
+            except self.client.exceptions.RejectedRecordsException as err:
+                self._print_rejected_records_exceptions(err)
+            except Exception as err:
+                print("Error:", err)
+        else:
+            print("price is None")
 
     @staticmethod
-    def consume_kafka():
+    def consume_kafka(result):
         """Publica un mensaje JSON en Kafka con clave"""
-        KAFKA_CMD = f'''./kafka_2.13-3.6.0/bin/kafka-console-producer.sh \
-        --bootstrap-server {BOOTSTRAP_STRING} \
-        --consumer.config ./config/client.properties \
-        --topic {TOPIC} \
-        --property print.key=true \
-        --property print.value=true \
-        --property print.partition=true \
-        --property print.offset=true \
-        --property print.timestamp=true \
-        --consumer-property group.id=imat3a_group02'''
+        try:
+            line = result.stdout.readline().split("\t")[-1]
+            data = json.loads(line)
+            price = data.get("price", None)
+            return price
+        except Exception as e:
+            print("Error:", e)
+            return None
 
-        result = subprocess.run(KAFKA_CMD, shell=True, capture_output=True, text=True)
-
-        if result.stdout.strip():
-            try:
-                kafka_message = json.loads(result.stdout.strip())  # Convertir la salida en JSON
-                price = kafka_message.get("price", None)  # Extraer el precio
-                print("price = ", price)
-                if price is not None:
-                    price = float(price)
-                    return price
-            except json.JSONDecodeError:
-                pass
 
     @staticmethod
     def _print_rejected_records_exceptions(err):
@@ -96,12 +102,12 @@ class TimestreamWriter:
 def main():
     # Create database and table if they don't exist
     writer = TimestreamWriter()
+    result = writer.create_cli_consumer()
     
     # Write records every 5 seconds
     try:
         while True:
-            writer.write_records()
-            time.sleep(5)
+            writer.write_records(result)
     except KeyboardInterrupt:
         print("\nStopping the writer...")
 
